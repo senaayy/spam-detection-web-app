@@ -138,8 +138,14 @@ def train_model():
         "Yeni aktivite deneyelim"
     ]
 
-    labels = [1]*50 + [0]*50  # SPAM=1, NORMAL=0 (100 toplam)
-
+    labels = [1]*50 + [0]*57  # SPAM=1, NORMAL=0 (107 toplam)
+    
+    # Debug: Sayım kontrolü
+    print(f"📊 SPAM örnekleri: {len([e for e in emails[:50]])}")
+    print(f"📊 NORMAL örnekleri: {len([e for e in emails[50:]])}")
+    print(f"📊 Toplam e-posta: {len(emails)}")
+    print(f"📊 Toplam labels: {len(labels)}")
+    
     # DataFrame
     df = pd.DataFrame({"text": emails, "label": labels})
 
