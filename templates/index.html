@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📧 Spam Tespit Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .prediction {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .prediction.spam {
+            background: #ffe6e6;
+            color: #d63031;
+            border: 2px solid #ff7675;
+        }
+
+        .prediction.normal {
+            background: #e6ffe6;
+            color: #00b894;
+            border: 2px solid #55a3ff;
+        }
+
+        .probabilities {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .prob-item {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e1e5e9;
+        }
+
+        .prob-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .prob-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .confidence {
+            text-align: center;
+            font-size: 1.1em;
+            color: #666;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #d63031;
+            display: none;
+        }
+
+        .success {
+            background: #e6ffe6;
+            color: #00b894;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #00b894;
+            display: none;
+        }
+
+        .example-emails {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .example-emails h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .example-list {
+            list-style: none;
+        }
+
+        .example-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e1e5e9;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .example-list li:hover {
+            color: #667eea;
+        }
+
+        .example-list li:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .probabilities {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Spam Tespit Sistemi</h1>
+            <p>Yapay zeka ile e-posta spam analizi</p>
+        </div>
+
+        <div class="content">
+            <div class="form-group">
+                <label for="emailText">📝 E-posta Metni:</label>
+                <textarea id="emailText" placeholder="Analiz edilecek e-posta metnini buraya yazın..."></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="analyzeEmail()" id="analyzeBtn">
+                    🔍 Analiz Et
+                </button>
+                <button class="btn btn-secondary" onclick="trainModel()" id="trainBtn">
+                    🚀 Modeli Eğit
+                </button>
+            </div>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analiz ediliyor...</p>
+            </div>
+
+            <div class="result" id="result">
+                <div class="prediction" id="prediction"></div>
+                <div class="probabilities">
+                    <div class="prob-item">
+                        <div class="prob-label">SPAM Olasılığı</div>
+                        <div class="prob-value" id="spamProb">0%</div>
+                    </div>
+                    <div class="prob-item">
+                        <div class="prob-label">NORMAL Olasılığı</div>
+                        <div class="prob-value" id="normalProb">0%</div>
+                    </div>
+                </div>
+                <div class="confidence">
+                    Güven: <span id="confidence">0%</span>
+                </div>
+            </div>
+
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
+
+            <div class="example-emails">
+                <h3>💡 Örnek E-postalar (Test için tıklayın):</h3>
+                <ul class="example-list">
+                    <li onclick="fillExample('HEMEN TIKLA 5000 TL KAZAN!!!')">HEMEN TIKLA 5000 TL KAZAN!!!</li>
+                    <li onclick="fillExample('Toplantı yarın saat 3\'te')">Toplantı yarın saat 3'te</li>
+                    <li onclick="fillExample('BEDAVA PARA kazanmak için tıklayın')">BEDAVA PARA kazanmak için tıklayın</li>
+                    <li onclick="fillExample('Bugün spor salonuna gideceğim')">Bugün spor salonuna gideceğim</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('result').classList.remove('show');
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('success').style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('success');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function fillExample(text) {
+            document.getElementById('emailText').value = text;
+        }
+
+        async function analyzeEmail() {
+            const emailText = document.getElementById('emailText').value.trim();
+            
+            if (!emailText) {
+                showError('Lütfen e-posta metni girin!');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email_text: emailText })
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success) {
+                    // Sonuçları göster
+                    document.getElementById('prediction').textContent = data.prediction;
+                    document.getElementById('prediction').className = `prediction ${data.prediction.toLowerCase()}`;
+                    document.getElementById('spamProb').textContent = data.spam_probability + '%';
+                    document.getElementById('normalProb').textContent = data.normal_probability + '%';
+                    document.getElementById('confidence').textContent = data.confidence + '%';
+                    
+                    document.getElementById('result').classList.add('show');
+                    showSuccess('Analiz tamamlandı!');
+                } else {
+                    showError(data.error || 'Analiz sırasında hata oluştu.');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Bağlantı hatası: ' + error.message);
+            }
+        }
+
+        async function trainModel() {
+            const trainBtn = document.getElementById('trainBtn');
+            const originalText = trainBtn.textContent;
+            
+            trainBtn.disabled = true;
+            trainBtn.textContent = '🔄 Eğitiliyor...';
+            showLoading();
+
+            try {
+                const response = await fetch('/train', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success) {
+                    showSuccess(`Model başarıyla eğitildi! Doğruluk: ${(data.results.accuracy * 100).toFixed(1)}%`);
+                } else {
+                    showError(data.error || 'Model eğitimi sırasında hata oluştu.');
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Bağlantı hatası: ' + error.message);
+            } finally {
+                trainBtn.disabled = false;
+                trainBtn.textContent = originalText;
+            }
+        }
+
+        // Enter tuşu ile analiz
+        document.getElementById('emailText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                analyzeEmail();
+            }
+        });
+    </script>
+</body>
+</html>
