@@ -396,8 +396,8 @@
 
             showLoading();
 
-            try {
-                const response = await fetch('/analyze', {
+                    try {
+            const response = await fetch('http://127.0.0.1:5001/analyze', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -436,7 +436,7 @@
             showLoading();
 
             try {
-                const response = await fetch('/train', {
+                const response = await fetch('http://127.0.0.1:5001/train', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
